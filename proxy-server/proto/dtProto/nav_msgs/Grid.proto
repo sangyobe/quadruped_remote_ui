@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package dtproto.nav_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+import "dtProto/geometry_msgs/Vector.proto";
+import "google/protobuf/timestamp.proto";
+
+message Grid {
+    message Layer {
+        enum CellFormat {
+            UNKNOWN = 0;
+            FLOAT32 = 1;
+            FLOAT64 = 2;
+            INT8 = 3;
+            UINT8 = 4;
+            INT16 = 5;
+            UINT16 = 6;
+            INT32 = 7;
+            UINT32 = 8;
+            INT64 = 9;
+            UINT64 = 10;
+        }
+        string layer_id = 1;
+        CellFormat cell_format = 2;                     // cell data format
+        bytes data = 3;                                // grid data in row-major
+    }
+
+    string grid_id = 1;                             // human readable name of grid
+    google.protobuf.Timestamp acquisition_time = 2; // grid update time
+    string frame_id = 3;                            // frmae of reference
+    geometry_msgs.Pose3d pose_offset = 4;           // grid origin from the reference frame
+    geometry_msgs.Pose3d grid_center = 5;           // grid center position in map(grid) frame
+    geometry_msgs.Vector2ui32 grid_dim = 6;         // grid dimension (rows and columns)
+    geometry_msgs.Vector2d cell_size = 7;           // size of a single grid in meter [m/cell] in x/y direction
+    repeated Layer layers = 8;
+}
+
+message GridTimeStamped {
+    std_msgs.Header header = 1;
+    Grid grid = 2;
+}

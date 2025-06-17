@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package dtproto;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/std_msgs/State.proto";
+import "dtProto/std_msgs/Request.proto";
+import "dtProto/robot_msgs/RobotInfo.proto";
+import "dtProto/robot_msgs/ControlCmd.proto";
+import "dtProto/robot_msgs/MoveControl.proto";
+import "dtProto/robot_msgs/JointControl.proto";
+import "dtProto/sensor_msgs/Joy.proto";
+import "dtProto/perception_msgs/Object.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+service dtService 
+{
+    // server publishes information
+    rpc PublishState(std_msgs.Request) returns (stream std_msgs.State);
+
+    // request information
+    rpc RequestVersion(google.protobuf.Empty) returns (google.protobuf.StringValue);
+    rpc RequestRobotInfo(google.protobuf.Empty) returns (robot_msgs.RobotInfo);
+
+    // send command
+    rpc Move(robot_msgs.MoveControl) returns (std_msgs.Response);
+    rpc MoveJoint(robot_msgs.JointControl) returns (std_msgs.Response);
+    rpc Command(robot_msgs.ControlCmd) returns (std_msgs.Response);
+
+    // start bi-directional data streaming
+    rpc StreamJoy(stream sensor_msgs.Joy) returns (stream sensor_msgs.Joy);
+}
+
+service perception
+{
+    // server subscribes information
+    rpc SubscribePerceivedObjects(stream perception_msgs.ObjectArrayTimeStamped) returns (std_msgs.Response);
+}

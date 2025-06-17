@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package dtproto.quadruped;
+
+import "dtProto/nav_msgs/Odom.proto";
+import "dtProto/nav_msgs/Grid.proto";
+import "dtProto/nav_msgs/SteppableArea.proto";
+import "dtProto/std_msgs/Request.proto";
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Point.proto";
+import "dtProto/geometry_msgs/Vector.proto";
+import "dtProto/sensor_msgs/Imu.proto";
+import "dtProto/robot_msgs/RobotCommand.proto";
+
+message OdomWithJointPosTimeStamped {
+    dtproto.std_msgs.Header header = 1;
+    dtproto.nav_msgs.Odom odom = 2;
+    repeated double joint_pos = 3;
+    repeated dtproto.geometry_msgs.Point3d foot_pos = 4;
+    geometry_msgs.Vector4b contact = 5;
+    geometry_msgs.Point3d gyro_bias = 6;
+    geometry_msgs.Point3d acc_bias = 7;
+}
+
+service Nav {
+    // server publishes infomation
+    rpc PublishOdomWithJointPos (std_msgs.Request) returns (stream OdomWithJointPosTimeStamped);
+    rpc PublishImu (std_msgs.Request) returns (stream sensor_msgs.ImuTimeStamped);
+
+    // client feeds information
+    rpc SubscribeVisualOdom (stream dtproto.nav_msgs.OdomTimeStamped) returns (std_msgs.Response);
+    rpc SubscribeLocalGridmap (stream dtproto.nav_msgs.GridTimeStamped) returns (std_msgs.Response);
+    rpc SubscribeSteppableArea (stream dtproto.nav_msgs.SteppableAreaTimeStamped) returns (std_msgs.Response);
+    rpc SubscribeRobotCommand (stream dtproto.robot_msgs.RobotCommandTimeStamped) returns (std_msgs.Response);
+}

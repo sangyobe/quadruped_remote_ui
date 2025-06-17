@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+import "dtProto/geometry_msgs/Point.proto";
+
+message Wrench {
+  Point3d force = 1;
+  Point3d torque = 2;
+}

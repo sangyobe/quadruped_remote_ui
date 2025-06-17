@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+import "dtProto/geometry_msgs/Vector.proto";
+
+message SE2Velocity {
+  Vec2d linear = 1;
+  double angular = 2;
+}
+
+message SE3Velocity {
+  Vec3d linear = 1;
+  Vec3d angluar = 2;
+}

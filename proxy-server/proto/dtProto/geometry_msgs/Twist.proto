@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+import "dtProto/geometry_msgs/Point.proto";
+
+message Twist {
+  Point3d linear = 1;
+  Point3d angular = 2;
+}

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+import "dtProto/geometry_msgs/Point.proto";
+
+message Polygon2d {
+  Point2d center = 1;
+  Point2d normal = 2;
+  repeated Point2d vertex = 3;
+  uint32 vertex_count = 4;
+}
+
+message Polygon3d {
+  Point3d center = 1;
+  Point3d normal = 2;
+  repeated Point3d vertex = 3;
+  uint32 vertex_count = 4;
+}

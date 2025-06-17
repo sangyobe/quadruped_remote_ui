@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package dtproto.perception_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+
+message Object {
+  uint32 id = 1;
+  geometry_msgs.Pose3d pose = 2;
+}
+
+message ObjectArray {
+  repeated Object objects = 1;
+}
+
+message ObjectTimeStamped {
+  std_msgs.Header header = 1;
+  Object object = 2;
+}
+
+message ObjectArrayTimeStamped {
+  std_msgs.Header header = 1;
+  ObjectArray object_array = 2;
+}

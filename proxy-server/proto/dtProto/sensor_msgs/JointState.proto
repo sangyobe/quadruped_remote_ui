@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dtproto.sensor_msgs;
+
+message JointState {
+  double position = 1;        // rad (or) m
+  double velocity = 2;        // rad/sec (or) m/s
+  double acceleration = 3;    // rad/sec^2 (or) m/s^2
+  double torque = 4;          // Nm
+}

@@ -1,0 +1,218 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+//-------------------------------------------
+// n-dimensional double vectors
+//
+message VectorXd { repeated double val = 1; }
+
+message Vector2d {
+  double a1 = 1;
+  double a2 = 2;
+}
+
+message Vector3d {
+  double a1 = 1;
+  double a2 = 2;
+  double a3 = 3;
+}
+
+message Vector4d {
+  double a1 = 1;
+  double a2 = 2;
+  double a3 = 3;
+  double a4 = 4;
+}
+
+message Vector6d {
+  double a1 = 1;
+  double a2 = 2;
+  double a3 = 3;
+  double a4 = 4;
+  double a5 = 5;
+  double a6 = 6;
+}
+
+message Vec2d {
+  double x = 1;
+  double y = 2;
+}
+
+message Vec3d {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+//-------------------------------------------
+// n-dimensional float vectors
+//
+message VectorXf { repeated float val = 1; }
+
+message Vector2f {
+  float a1 = 1;
+  float a2 = 2;
+}
+
+message Vector3f {
+  float a1 = 1;
+  float a2 = 2;
+  float a3 = 3;
+}
+
+message Vector4f {
+  float a1 = 1;
+  float a2 = 2;
+  float a3 = 3;
+  float a4 = 4;
+}
+
+message Vector6f {
+  float a1 = 1;
+  float a2 = 2;
+  float a3 = 3;
+  float a4 = 4;
+  float a5 = 5;
+  float a6 = 6;
+}
+
+message Vec2f {
+  float x = 1;
+  float y = 2;
+}
+
+message Vec3f {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+//-------------------------------------------
+// n-dimensional unsigned-int vectors
+//
+message VectorXui32 { repeated uint32 val = 1; }
+
+message Vector2ui32 {
+  uint32 a1 = 1;
+  uint32 a2 = 2;
+}
+
+message Vector3ui32 {
+  uint32 a1 = 1;
+  uint32 a2 = 2;
+  uint32 a3 = 3;
+}
+
+message Vector4ui32 {
+  uint32 a1 = 1;
+  uint32 a2 = 2;
+  uint32 a3 = 3;
+  uint32 a4 = 4;
+}
+
+message Vector6ui32 {
+  uint32 a1 = 1;
+  uint32 a2 = 2;
+  uint32 a3 = 3;
+  uint32 a4 = 4;
+  uint32 a5 = 5;
+  uint32 a6 = 6;
+}
+
+message Vec2ui32 {
+  uint32 x = 1;
+  uint32 y = 2;
+}
+
+message Vec3ui32 {
+  uint32 x = 1;
+  uint32 y = 2;
+  uint32 z = 3;
+}
+
+//-------------------------------------------
+// n-dimensional signed-int vectors
+//
+message VectorXi32 { repeated int32 val = 1; }
+
+message Vector2i32 {
+  int32 a1 = 1;
+  int32 a2 = 2;
+}
+
+message Vector3i32 {
+  int32 a1 = 1;
+  int32 a2 = 2;
+  int32 a3 = 3;
+}
+
+message Vector4i32 {
+  int32 a1 = 1;
+  int32 a2 = 2;
+  int32 a3 = 3;
+  int32 a4 = 4;
+}
+
+message Vector6i32 {
+  int32 a1 = 1;
+  int32 a2 = 2;
+  int32 a3 = 3;
+  int32 a4 = 4;
+  int32 a5 = 5;
+  int32 a6 = 6;
+}
+
+message Vec2i32 {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Vec3i32 {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
+}
+
+//-------------------------------------------
+// n-dimensional boolean vectors
+//
+message VectorXb { repeated bool val = 1; }
+
+message Vector2b {
+  bool a1 = 1;
+  bool a2 = 2;
+}
+
+message Vector3b {
+  bool a1 = 1;
+  bool a2 = 2;
+  bool a3 = 3;
+}
+
+message Vector4b {
+  bool a1 = 1;
+  bool a2 = 2;
+  bool a3 = 3;
+  bool a4 = 4;
+}
+
+message Vector6b {
+  bool a1 = 1;
+  bool a2 = 2;
+  bool a3 = 3;
+  bool a4 = 4;
+  bool a5 = 5;
+  bool a6 = 6;
+}
+
+message Vec2b {
+  bool x = 1;
+  bool y = 2;
+}
+
+message Vec3b {
+  bool x = 1;
+  bool y = 2;
+  bool z = 3;
+}

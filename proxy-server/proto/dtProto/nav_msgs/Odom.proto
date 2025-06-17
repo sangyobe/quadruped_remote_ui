@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package dtproto.nav_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+import "dtProto/geometry_msgs/Orientation.proto";
+import "dtProto/geometry_msgs/Twist.proto";
+import "dtProto/geometry_msgs/Matrix.proto";
+
+message Odom {
+  geometry_msgs.Pose3d pose = 1;
+  geometry_msgs.Twist twist = 2;
+  // The twist in this message should be specified in the coordinate frame given by the child_frame_id
+  
+  string child_frame_id = 3;
+}
+
+message OdomTimeStamped {
+  std_msgs.Header header = 1;
+  Odom odom = 2;
+}
+
+message OdomWithCov {
+  geometry_msgs.Pose3d pose = 1;
+  geometry_msgs.Twist twist = 2;
+  string child_frame_id = 3;
+  // Row-major representation of the 6x6 covariance matrix
+  // The orientation parameters use a fixed-axis representation.
+  // In order, the parameters are:
+  // (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
+  geometry_msgs.Matrix6d pose_cov = 4;
+  geometry_msgs.Matrix6d twist_cov = 5;
+}
+
+message OdomWithCovTimeStamped {
+  std_msgs.Header header = 1;
+  OdomWithCov odom = 2;
+}

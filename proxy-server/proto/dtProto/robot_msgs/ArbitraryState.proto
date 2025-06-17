@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package dtproto.robot_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/std_msgs/PackedArray.proto";
+
+message ArbitraryStateTimeStamped {
+  std_msgs.Header header = 1;
+  std_msgs.PackedDouble state = 2;
+}

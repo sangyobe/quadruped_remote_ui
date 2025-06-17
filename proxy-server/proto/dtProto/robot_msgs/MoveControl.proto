@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package dtproto.robot_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+import "dtProto/geometry_msgs/Twist.proto";
+
+message MoveControl {
+  enum ControlMode {
+    POSE_ABSOLUTE = 0;
+    POSE_RELATIVE = 1;
+    VEL_ABSOLUBE = 2;
+    VEL_RELATIVE = 3;
+  }
+  ControlMode mode = 1;
+  geometry_msgs.Pose3d cmd_pose = 2;
+  geometry_msgs.Twist cmd_vel = 3;
+  float duration = 4;
+}
+
+message MoveControlTimeStamped {
+  std_msgs.Header header = 1;
+  MoveControl cmd = 2;
+}

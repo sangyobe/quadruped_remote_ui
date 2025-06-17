@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package dtproto.sensor_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+
+message BatteryState {
+  enum ChargingStatus {
+    ON = 0;
+    OFF = 1;
+  } 
+  float voltage = 1;                    // Volts
+  float temperature = 2;                // Degrees Celsius
+  float current = 3;                    // A (Negative when discharging)
+  float charge = 4;                     // Ah (Current charge)
+  float design_capacity = 5;            // Ah (Design capacity)
+  float percentage = 6;                 // 0...1
+  ChargingStatus charging_status = 7;
+}
+
+message BatteryStateTimeStamped {
+    std_msgs.Header header = 1;
+    BatteryState battery = 2;
+}

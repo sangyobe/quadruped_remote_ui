@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package dtproto.robot_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Point.proto";
+import "dtProto/geometry_msgs/Vector.proto";
+import "dtProto/geometry_msgs/Matrix.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+import "dtProto/geometry_msgs/Twist.proto";
+import "dtProto/geometry_msgs/Orientation.proto";
+import "dtProto/sensor_msgs/JointState.proto";
+import "dtProto/sensor_msgs/BatteryState.proto";
+
+message RobotState {
+  geometry_msgs.Pose3d base_pose = 1;
+  geometry_msgs.Twist base_velocity = 2;
+  repeated sensor_msgs.JointState joint_state = 3;
+  sensor_msgs.BatteryState battery_state = 4;
+  uint32 status = 5; // system fault/error status
+}
+
+message RobotStateTimeStamped {
+  std_msgs.Header header = 1;
+  RobotState state = 2;
+}

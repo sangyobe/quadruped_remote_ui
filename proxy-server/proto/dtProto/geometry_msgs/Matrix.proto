@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+message Matrix2d {
+    double a11 = 1;
+    double a12 = 2;
+    double a21 = 3;
+    double a22 = 4;
+}
+
+message Matrix3d {
+    double a11 = 1;
+    double a12 = 2;
+    double a13 = 3;
+    double a21 = 4;
+    double a22 = 5;
+    double a23 = 6;
+    double a31 = 7;
+    double a32 = 8;
+    double a33 = 9;
+}
+
+message Matrix4d {
+    double a11 = 1;
+    double a12 = 2;
+    double a13 = 3;
+    double a14 = 4;
+    double a21 = 5;
+    double a22 = 6;
+    double a23 = 7;
+    double a24 = 8;
+    double a31 = 9;
+    double a32 = 10;
+    double a33 = 11;
+    double a34 = 12;
+    double a41 = 13;
+    double a42 = 14;
+    double a43 = 15;
+    double a44 = 16;
+}
+
+message Matrix6d {
+    double a11 = 1;
+    double a12 = 2;
+    double a13 = 3;
+    double a14 = 4;
+    double a15 = 5;
+    double a16 = 6;
+    double a21 = 7;
+    double a22 = 8;
+    double a23 = 9;
+    double a24 = 10;
+    double a25 = 11;
+    double a26 = 12;
+    double a31 = 13;
+    double a32 = 14;
+    double a33 = 15;
+    double a34 = 16;
+    double a35 = 17;
+    double a36 = 18;
+    double a41 = 19;
+    double a42 = 20;
+    double a43 = 21;
+    double a44 = 22;
+    double a45 = 23;
+    double a46 = 24;
+    double a51 = 25;
+    double a52 = 26;
+    double a53 = 27;
+    double a54 = 28;
+    double a55 = 29;
+    double a56 = 30;
+    double a61 = 31;
+    double a62 = 32;
+    double a63 = 33;
+    double a64 = 34;
+    double a65 = 35;
+    double a66 = 36;
+}
+
+message Matrix2f {
+    float a11 = 1;
+    float a12 = 2;
+    float a21 = 3;
+    float a22 = 4;
+}
+
+message Matrix3f {
+    float a11 = 1;
+    float a12 = 2;
+    float a13 = 3;
+    float a21 = 4;
+    float a22 = 5;
+    float a23 = 6;
+    float a31 = 7;
+    float a32 = 8;
+    float a33 = 9;
+}
+
+message Matrix4f {
+    float a11 = 1;
+    float a12 = 2;
+    float a13 = 3;
+    float a14 = 4;
+    float a21 = 5;
+    float a22 = 6;
+    float a23 = 7;
+    float a24 = 8;
+    float a31 = 9;
+    float a32 = 10;
+    float a33 = 11;
+    float a34 = 12;
+    float a41 = 13;
+    float a42 = 14;
+    float a43 = 15;
+    float a44 = 16;
+}
+
+message Matrix6f {
+    float a11 = 1;
+    float a12 = 2;
+    float a13 = 3;
+    float a14 = 4;
+    float a15 = 5;
+    float a16 = 6;
+    float a21 = 7;
+    float a22 = 8;
+    float a23 = 9;
+    float a24 = 10;
+    float a25 = 11;
+    float a26 = 12;
+    float a31 = 13;
+    float a32 = 14;
+    float a33 = 15;
+    float a34 = 16;
+    float a35 = 17;
+    float a36 = 18;
+    float a41 = 19;
+    float a42 = 20;
+    float a43 = 21;
+    float a44 = 22;
+    float a45 = 23;
+    float a46 = 24;
+    float a51 = 25;
+    float a52 = 26;
+    float a53 = 27;
+    float a54 = 28;
+    float a55 = 29;
+    float a56 = 30;
+    float a61 = 31;
+    float a62 = 32;
+    float a63 = 33;
+    float a64 = 34;
+    float a65 = 35;
+    float a66 = 36;
+}

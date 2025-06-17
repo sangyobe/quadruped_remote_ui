@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package dtproto.robot_msgs;
+
+message RobotInfo {
+  string name = 1;
+  string author = 2;
+  string version = 3;
+  string description = 4;
+  string serial = 5;
+  uint32 type = 6;
+  uint32 id = 7;
+  uint32 dof = 8;
+}

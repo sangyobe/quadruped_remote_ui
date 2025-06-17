@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package dtproto.std_msgs;
+
+message PackedDouble {
+  repeated double data = 1 [packed=true];
+}

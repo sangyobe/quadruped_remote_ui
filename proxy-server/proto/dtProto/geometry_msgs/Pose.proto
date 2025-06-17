@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+import "dtProto/geometry_msgs/Point.proto";
+import "dtProto/geometry_msgs/Orientation.proto";
+
+message Pose2d {
+  Point2d position = 1;
+  double heading = 2;
+}
+
+message Pose3d {
+  Point3d position = 1;
+  Quaternion orientation = 2;
+}
+
+message SE2Pose {
+  Point2d position = 1;
+  double heading = 2;
+}
+
+message SE3Pose {
+  Point3d position = 1;
+  Quaternion orientation = 2;
+}

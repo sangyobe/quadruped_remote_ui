@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+message Displacement {
+    double a1 = 1;
+    double a2 = 2;
+    double a3 = 3;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package dtproto.sensor_msgs;
+
+import "google/protobuf/timestamp.proto";
+
+message Joy {
+  repeated float axes = 1;
+  repeated int32 buttons = 2;
+  google.protobuf.Timestamp time_stamp = 3;
+}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package dtproto.geometry_msgs;
+
+message Euler {
+    double r = 1;
+    double p = 2;
+    double y = 3;
+}
+
+message Quaternion {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+    double w = 4;
+}
+
+message Rotation {
+    double a11 = 1;
+    double a12 = 2;
+    double a13 = 3;
+    double a21 = 4;
+    double a22 = 5;
+    double a23 = 6;
+    double a31 = 7;
+    double a32 = 8;
+    double a33 = 9;
+}

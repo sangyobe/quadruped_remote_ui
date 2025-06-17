@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package dtproto.std_msgs;
+
+message PackedElementDesc {
+    enum NumericType {
+        UNKNOWN = 0;
+        FLOAT32 = 1;
+        FLOAT64 = 2;
+        INT8 = 3;
+        UINT8 = 4;
+        INT16 = 5;
+        UINT16 = 6;
+        INT32 = 7;
+        UINT32 = 8;
+        INT64 = 9;
+        UINT64 = 10;
+    }
+    string name = 1;        // name of field.
+    uint32 offset = 2;      // byte offset from start of data buffer.
+    NumericType type = 3;   // type of data.
+}
