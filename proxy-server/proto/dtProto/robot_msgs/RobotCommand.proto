@@ -7,44 +7,18 @@ import "dtProto/std_msgs/Header.proto";
 import "dtProto/geometry_msgs/Pose.proto";
 import "dtProto/geometry_msgs/Velocity.proto";
 import "dtProto/geometry_msgs/Trajectory.proto";
-
-message NavCommand {
-  message SE2TrajCommand {
-    dtproto.geometry_msgs.SE2Trajectory trajectory = 1;
-    google.protobuf.Timestamp end_time = 2; // The timestamp (in robot time) that the command is valid until.
-  }
-  message SE3TrajCommand {
-    dtproto.geometry_msgs.SE3Trajectory trajectory = 1;
-    google.protobuf.Timestamp end_time = 2;
-  }
-  message SE2PoseCommand {
-    dtproto.geometry_msgs.SE2Pose pose = 1;
-    google.protobuf.Timestamp end_time = 2;
-  }
-  message SE3PoseCommand {
-    dtproto.geometry_msgs.SE3Pose pose = 1;
-    google.protobuf.Timestamp end_time = 2;
-  }
-  message SE2VelCommand {
-    dtproto.geometry_msgs.SE2Velocity vel = 1;
-    google.protobuf.Timestamp end_time = 2;
-  }
-  message SE3VelCommand {
-    dtproto.geometry_msgs.SE3Velocity vel = 1;
-    google.protobuf.Timestamp end_time = 2;
-  }
-  oneof command {
-    SE2TrajCommand se2_target_traj = 1;
-    SE2PoseCommand se2_target_pose = 2;
-    SE2VelCommand se2_target_vel = 3;
-    SE3TrajCommand se3_target_traj = 11;
-    SE3PoseCommand se3_target_pose = 12;
-    SE3VelCommand se3_target_vel = 13;
-  }
-}
+import "dtProto/nav_msgs/NavCommand.proto";
+import "dtProto/robot_msgs/ControlCmd.proto";
+import "dtProto/robot_msgs/JointControl.proto";
+import "dtProto/robot_msgs/MoveControl.proto";
 
 message RobotCommand {
-  oneof command { NavCommand nav = 1; }
+  oneof command {
+    nav_msgs.NavCommand nav = 1;
+    robot_msgs.ControlCmd cmd = 2;
+    robot_msgs.JointControl joint_target = 3;
+    robot_msgs.MoveControl move_target = 4;
+  }
 }
 
 message RobotCommandTimeStamped {

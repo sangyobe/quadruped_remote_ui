@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package dtproto.nav_msgs;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/geometry_msgs/Pose.proto";
+import "dtProto/geometry_msgs/Velocity.proto";
+import "dtProto/geometry_msgs/Trajectory.proto";
+
+message NavState {
+    oneof pose {
+        dtproto.geometry_msgs.SE2Pose se2_pose = 1;
+        dtproto.geometry_msgs.SE3Pose se3_pose = 2;
+    }
+    oneof vel {
+        dtproto.geometry_msgs.SE2Velocity se2_vel = 3;
+        dtproto.geometry_msgs.SE3Velocity se3_vel = 4;
+    }
+    oneof cmd_vel {
+        dtproto.geometry_msgs.SE2Velocity se2_cmd_vel = 11;
+        dtproto.geometry_msgs.SE3Velocity se3_cmd_vel = 12;
+    }
+    oneof trajectory {
+        dtproto.geometry_msgs.SE2Trajectory se2_traj = 21;
+        dtproto.geometry_msgs.SE3Trajectory se3_traj = 22;
+    }
+}
+
+message NavStateTimeStamped {
+  std_msgs.Header header = 1;
+  NavState state = 2;
+}

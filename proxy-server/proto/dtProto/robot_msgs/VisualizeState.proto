@@ -4,8 +4,10 @@ package dtproto.robot_msgs;
 
 import "dtProto/std_msgs/Header.proto";
 import "dtProto/geometry_msgs/Marker.proto";
+import "dtProto/geometry_msgs/Path.proto";
 
 message VisualizeStateTimeStamped {
   std_msgs.Header header = 1;
   repeated geometry_msgs.Marker marker = 2;
+  repeated geometry_msgs.Path path = 3;
 }

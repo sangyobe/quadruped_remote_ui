@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package dtproto.dualarm;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/std_msgs/PackedArray.proto";
+import "dtProto/geometry_msgs/Point.proto";
+
+message ThreadState {
+  double ctrlPeriod_ms = 1;
+  double ctrlLoad_ms = 2;
+}
+
+message TaskState {
+  geometry_msgs.Point3d pos = 1;    // task position. unit [m].
+  geometry_msgs.Point3d rot = 2;    // euler angle at task point.
+  geometry_msgs.Point3d linVel = 3; // task linear velocity. unit [m/s].
+  geometry_msgs.Point3d angVel = 4; // task angular velocity. unit [rad/s].
+  geometry_msgs.Point3d force = 5;  // task force. unit [N].
+  geometry_msgs.Point3d moment = 6; // task moment. unit [Nm].
+  uint32 id = 7;                    // task id.
+}
+
+message JointState {
+  uint32 statusWord = 1;
+  uint32 controlWord = 2;
+  int32 incPosOfs_cnt = 3;
+  int32 absPosOfs_cnt = 4;
+  int32 incPos_cnt = 5;
+  int32 absPos_cnt = 6;
+  int32 incVel_cps = 7;
+  float mcuTemp_C = 8;
+  float invTemp_C = 9;
+  float inputVolt_V = 10;
+}
+
+message JointData {
+  double pos_rad = 1;    // main sensor data (incPos_rad or absPos_rad)
+  double posAux_rad = 2; // aux sensor data
+  double vel_rps = 3;    // main seMatrixnsor data
+  double acc_rpss = 4;
+  double torq_Nm = 5;
+}
+
+message ControlState {}
+
+message DualArmState {
+  repeated JointState jointState = 1;
+  repeated JointData actJointData = 2;
+  repeated JointData desJointData = 3;
+  repeated JointState gripperState = 4;
+  repeated JointData actGripperData = 5;
+  repeated JointData desGripperData = 6;
+  repeated TaskState actTaskState = 7;
+  repeated TaskState desTaskState = 8;
+  ControlState actControlState = 9;
+  ControlState desControlState = 10;
+  ThreadState threadState = 11;
+  std_msgs.PackedDouble arbitraryState = 20;
+  std_msgs.PackedDouble arbitraryStateXY = 21;
+}
+
+message DualArmStateTimeStamped {
+  std_msgs.Header header = 1;
+  DualArmState state = 2;
+}
+
+message OperationState {
+  int32 op_mode = 1;
+  int32 op_status = 2;
+}
+
+message OperationStateTimeStamped {
+  std_msgs.Header header = 1;
+  OperationState state = 2;
+}

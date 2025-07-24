@@ -9,6 +9,7 @@ import "dtProto/robot_msgs/RobotInfo.proto";
 import "dtProto/robot_msgs/ControlCmd.proto";
 import "dtProto/robot_msgs/MoveControl.proto";
 import "dtProto/robot_msgs/JointControl.proto";
+import "dtProto/robot_msgs/RobotCommand.proto";
 import "dtProto/sensor_msgs/Joy.proto";
 import "dtProto/perception_msgs/Object.proto";
 import "google/protobuf/empty.proto";
@@ -16,7 +17,7 @@ import "google/protobuf/wrappers.proto";
 
 service dtService 
 {
-    // server publishes information
+    // request server to publish information (server-side streaming)
     rpc PublishState(std_msgs.Request) returns (stream std_msgs.State);
 
     // request information
@@ -27,6 +28,10 @@ service dtService
     rpc Move(robot_msgs.MoveControl) returns (std_msgs.Response);
     rpc MoveJoint(robot_msgs.JointControl) returns (std_msgs.Response);
     rpc Command(robot_msgs.ControlCmd) returns (std_msgs.Response);
+    rpc RobotCommand(robot_msgs.RobotCommandTimeStamped) returns (std_msgs.Response);
+
+    // request server to subscribe client-side streaming information (client-side streaming)
+    rpc SubscribeRobotCommand (stream robot_msgs.RobotCommandTimeStamped) returns (std_msgs.Response);
 
     // start bi-directional data streaming
     rpc StreamJoy(stream sensor_msgs.Joy) returns (stream sensor_msgs.Joy);

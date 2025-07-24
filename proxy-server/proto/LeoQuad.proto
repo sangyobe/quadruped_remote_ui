@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package dtproto.leoquad;
+
+import "dtProto/std_msgs/Header.proto";
+import "dtProto/std_msgs/PackedArray.proto";
+import "dtProto/geometry_msgs/Point.proto";
+import "dtProto/geometry_msgs/Wrench.proto";
+import "dtProto/geometry_msgs/Orientation.proto";
+import "dtProto/geometry_msgs/Matrix.proto";
+import "dtProto/geometry_msgs/Vector.proto";
+import "dtProto/sensor_msgs/Imu.proto";
+import "dtProto/sensor_msgs/Joy.proto";
+
+message ThreadState {
+    double ctrlPeriod_ms = 1;
+    double ctrlLoad_ms = 2;
+    double mpcPeriod_ms = 3;
+    double mpcLoad_ms = 4;
+    double imuPeriod_ms = 5;
+    double imuLoad_ms = 6;
+    double joystickPeriod_ms = 7;
+    double joystickLoad_ms = 8;
+}
+
+message TaskState {
+    geometry_msgs.Point3d pos = 1;         // task position. unit [m].
+    geometry_msgs.Rotation rot = 2;         // rotation matrix at task point.
+    geometry_msgs.Point3d linVel = 3;      // task linear velocity. unit [m/s].
+    geometry_msgs.Point3d angVel = 4;      // task angular velocity. unit [rad/s].
+
+    geometry_msgs.Point3d force = 5;       // task force. unit [N].
+    geometry_msgs.Point3d moment = 6;      // task moment. unit [Nm].
+    geometry_msgs.Wrench wrench = 7;        // (force, moment).
+    uint32 id = 8;                          // task id.
+}
+
+message JointState {
+    uint32 statusWord = 1;
+    uint32 controlWord = 2;
+    int32 incPosOfs_cnt = 3;
+    int32 absPosOfs_cnt = 4;
+    int32 incPos_cnt = 5;
+    int32 absPos_cnt = 6;
+    int32 incVel_cps = 7;
+    float mcuTemp_C = 8;
+    float invTemp_C = 9;
+    float inputVolt_V = 10;
+}
+
+message JointData {
+    double pos_rad = 1; // main sensor data (incPos_rad or absPos_rad)
+    double posAux_rad = 2; // aux sensor data
+    double vel_rps = 3; // main seMatrixnsor data
+    double acc_rpss = 4 ;
+    double torq_Nm = 5;
+}
+
+message ControlState {
+  geometry_msgs.Point3d posWorld2ComWrtWorld = 1;
+  geometry_msgs.Point3d velWorld2ComWrtWorld = 2;
+  geometry_msgs.Point3d posWorld2BodyWrtWorld = 3;
+  geometry_msgs.Point3d velWorld2BodyWrtWorld = 4;
+  geometry_msgs.Euler eulerAngleBodyWrtWorld = 5;
+  geometry_msgs.Euler angularVelBodyWrtWorld = 6;
+  geometry_msgs.Euler angularVelBodyWrtBody = 7;
+  geometry_msgs.Point3d angularMomentumBodyWrtWorld = 8;
+  repeated geometry_msgs.Point3d posWorld2FootWrtWorld = 9;
+  repeated geometry_msgs.Point3d velWorld2FootWrtWorld = 10;
+  repeated geometry_msgs.Point3d posBody2FootWrtWorld = 11;
+  repeated geometry_msgs.Point3d velBody2FootWrtWorld = 12;
+  repeated geometry_msgs.Point3d posBody2FootWrtBody = 13;
+  repeated geometry_msgs.Point3d velBody2FootWrtBody = 14;
+  repeated geometry_msgs.Point3d forceWorld2FootWrtWorld = 15;
+  geometry_msgs.Matrix3d rotBodyWrtWorld = 16;
+  geometry_msgs.Vector4b contact = 17;
+  geometry_msgs.Point3d posCtrl2ComWrtWorld = 18;
+  geometry_msgs.Point3d velCtrl2ComWrtWorld = 19;
+}
+
+message CpgState {
+  geometry_msgs.Vector2d periods = 1;
+  geometry_msgs.Vector4d phases = 2;
+  geometry_msgs.Vector4d phi = 3;
+  geometry_msgs.Vector4d phiToGo = 4;
+  geometry_msgs.Vector4d phiSt = 5;
+  geometry_msgs.Vector4d phiSw = 6;
+  geometry_msgs.Vector4d cpg = 7;
+  geometry_msgs.Vector4b contact = 8;
+  geometry_msgs.Vector4b phaseChangeFlag = 9;
+  geometry_msgs.Vector4b periodChangeFlag = 10;
+  geometry_msgs.Vector4d phaseDiff = 11;
+  geometry_msgs.Vector4d phiTran = 12;
+  geometry_msgs.Vector4d phiTranSt = 13;
+  geometry_msgs.Vector4d phiTranSw = 14;
+  geometry_msgs.Vector4i32 step = 15;
+  double dt = 16;
+  bool air = 17;
+}
+
+message LeoQuadState {
+  repeated JointState jointState = 1;
+  repeated JointData actJointData = 2;
+  repeated JointData desJointData = 3;
+  TaskState desTaskState = 4;
+  TaskState actTaskState = 5;
+  sensor_msgs.Imu imu = 6;
+  sensor_msgs.Joy joystick = 7;
+  ControlState actControlState = 8;
+  ControlState desControlState = 9;
+  CpgState cpgState = 10;
+  ThreadState threadState = 11;
+  std_msgs.PackedDouble arbitraryState = 20;
+  std_msgs.PackedDouble arbitraryStateXY = 21;
+}
+
+message LeoQuadStateTimeStamped {
+  std_msgs.Header header = 1;
+  LeoQuadState state = 2;
+}
+
+message OperationState {
+  int32 controlMode = 1;
+  int32 gaitType = 2;
+  geometry_msgs.Vector4i32 gaitStep = 3;
+  geometry_msgs.Vector2d gaitPeriod = 4;
+  float voltage = 7;
+  uint32 errorState = 9;
+}
+  
+message OperationStateTimeStamped {
+  std_msgs.Header header = 1;
+  OperationState state = 2;
+}
+
+message EstimateStateKF {
+  geometry_msgs.Point3d posGtB_G = 1;
+  geometry_msgs.Point3d velGtB_G = 2;
+  geometry_msgs.Point3d posGtE1_G = 3;
+  geometry_msgs.Point3d posGtE2_G = 4;
+  geometry_msgs.Point3d posGtE3_G = 5;
+  geometry_msgs.Point3d posGtE4_G = 6;
+  geometry_msgs.Vector3d biasAcc_G = 7;
+  double timeLoad_us =8;
+}
+
+message EstimateStateEKF {
+  geometry_msgs.Point3d posGtB_G = 1;
+  geometry_msgs.Point3d velGtB_G = 2;
+  geometry_msgs.Quaternion quatG2B = 3;
+  geometry_msgs.Point3d posGtE1_G = 4;
+  geometry_msgs.Point3d posGtE2_G = 5;
+  geometry_msgs.Point3d posGtE3_G = 6;
+  geometry_msgs.Point3d posGtE4_G = 7;
+  geometry_msgs.Vector3d biasAcc_B = 9;
+  geometry_msgs.Vector3d biasGyro_B = 10;
+  double timeLoad_us =11;
+
+  geometry_msgs.Euler eulerZyxGtB = 12;
+} 
+
+message ImuData {
+  geometry_msgs.Euler eulerZyxGtB = 1;
+  geometry_msgs.Vector3d Acc = 2;
+  geometry_msgs.Vector3d Gyro =3;
+}
