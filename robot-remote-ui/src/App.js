@@ -122,8 +122,8 @@ function App() {
       const message = JSON.parse(event.data);
       if (message.type === 'opstate-update') {
         setOpState(message.data);
-      } else {
-        setRobotState(message);
+      } else if (message.type === 'robotstate-update') {
+          setRobotState(message.data);
       }
     };
 

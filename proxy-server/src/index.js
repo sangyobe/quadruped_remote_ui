@@ -134,24 +134,25 @@ const RobotStateTimeStamped = root.lookupType("dtproto.robot_msgs.RobotStateTime
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// State streaming setup
-let stateStream = null;
+// Robot State streaming setup
+let robotStateStream = null;
+let lastRobotStateUpdateTime = 0; // Add this line to track last update time
 
-const startStateStreaming = () => {
-    if (stateStream) {
-        console.log('State stream already exists');
+const startRobotStateStreaming = () => {
+    if (robotStateStream) {
+        console.log('Robot state stream already exists');
         return;
     }
 
     try {
-        const stateClient = new dtService(
+        const robotStateClient = new dtService(
             `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_ROBOT_STATE_SERVER_PORT || 50053}`,
             grpc.credentials.createInsecure()
         );
 
-        stateStream = stateClient.PublishState({});
+        robotStateStream = robotStateClient.PublishState({});
         
-        stateStream.on('data', (response) => {
+        robotStateStream.on('data', (response) => {
             const anyMessage = response.state;
 
             if (anyMessage && anyMessage.type_url && anyMessage.value) {
@@ -169,15 +170,19 @@ const startStateStreaming = () => {
                                 theta: decodedState.state.base_pose.orientation.z // Assuming z is the yaw angle
                             };
 
-                            console.log('Received and decoded robot state(pose):', robotstate);
-
                             // Broadcast to all connected WebSocket clients
-                            broadcastState(robotstate);
-                            // wss.clients.forEach((client) => {
-                            //     if (client.readyState === WebSocket.OPEN) {
-                            //         client.send(JSON.stringify({ type: 'state-update', data: robotstate }));
-                            //     }
-                            // });
+                            // broadcastState(robotstate);
+                            wss.clients.forEach((client) => {
+                                if (client.readyState === WebSocket.OPEN) {
+                                    client.send(JSON.stringify({ type: 'robotstate-update', data: robotstate }));
+                                }
+                            });
+
+                            const currentTime = Date.now();
+                            if (currentTime - lastRobotStateUpdateTime >= 1000) { // Check if 1 second has passed for logging
+                                console.log('Received and decoded robot state(pose):', robotstate);
+                                lastRobotStateUpdateTime = currentTime; // Update last update time for logging
+                            }
                         }
                     } catch (e) {
                         console.error('Failed to decode Any message:', e);
@@ -186,34 +191,34 @@ const startStateStreaming = () => {
             }
         });
 
-        stateStream.on('error', (error) => {
-            console.error('State stream error:', error);
-            stateStream = null;
+        robotStateStream.on('error', (error) => {
+            console.error('Robot state stream error:', error);
+            robotStateStream = null;
             // Attempt to reconnect after a delay
-            setTimeout(startStateStreaming, 5000);
+            setTimeout(startRobotStateStreaming, 5000);
         });
 
-        stateStream.on('end', () => {
-            console.log('State stream ended');
-            stateStream = null;
+        robotStateStream.on('end', () => {
+            console.log('Robot state stream ended');
+            robotStateStream = null;
             // Attempt to reconnect after a delay
-            setTimeout(startStateStreaming, 5000);
+            setTimeout(startRobotStateStreaming, 5000);
         });
 
-        console.log('State streaming started');
+        console.log('Robot state streaming started');
     } catch (error) {
-        console.error('Error creating state stream:', error);
-        stateStream = null;
+        console.error('Error creating robot state stream:', error);
+        robotStateStream = null;
         // Attempt to reconnect after a delay
-        setTimeout(startStateStreaming, 5000);
+        setTimeout(startRobotStateStreaming, 5000);
     }
 };
 
 // Start state streaming when server starts
-startStateStreaming();
+startRobotStateStreaming();
 
 ////////////////////////////////////////////////////////////////////////////////
-// opstate streaming setup
+// Operation State streaming setup
 let opstateStream = null;
 let lastOpStateUpdateTime = 0; // Add this line to track last update time
 
