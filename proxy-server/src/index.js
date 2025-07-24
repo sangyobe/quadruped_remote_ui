@@ -11,11 +11,11 @@ require('dotenv').config();
 console.log('Environment Variables:');
 console.log(`PORT: ${process.env.PORT}`);
 console.log(`WSS_PORT: ${process.env.WSS_PORT}`);
-console.log(`STATE_SERVER_HOST: ${process.env.STATE_SERVER_HOST}`);
-console.log(`GRPC_STATE_SERVER_PORT: ${process.env.GRPC_STATE_SERVER_PORT}`);
-console.log(`GRPC_OPSTATE_SERVER_PORT: ${process.env.GRPC_OPSTATE_SERVER_PORT}`);
-console.log(`GRPC_COMMAND_SERVER_PORT: ${process.env.GRPC_COMMAND_SERVER_PORT}`);
 console.log(`GRPC_SERVER_HOST: ${process.env.GRPC_SERVER_HOST}`);
+console.log(`GRPC_ROBOT_STATE_SERVER_PORT: ${process.env.GRPC_ROBOT_STATE_SERVER_PORT}`);
+console.log(`GRPC_OPSTATE_SERVER_PORT: ${process.env.GRPC_OPSTATE_SERVER_PORT}`);
+console.log(`GRPC_NAV_COMMAND_SERVER_PORT: ${process.env.GRPC_NAV_COMMAND_SERVER_PORT}`);
+console.log(`GRPC_TASK_COMMAND_SERVER_PORT: ${process.env.GRPC_TASK_COMMAND_SERVER_PORT}`);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
