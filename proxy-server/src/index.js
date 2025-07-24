@@ -72,8 +72,7 @@ const packageDefinition = protoLoader.loadSync(
         defaults: true,
         oneofs: true,
         includeDirs: [
-            path.join(__dirname, '../proto'),
-            path.join(__dirname, '../proto/dtProto')
+            path.join(__dirname, '../proto')
         ]
     }
 );
@@ -82,14 +81,40 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 
 const quadrupedService = protoDescriptor.dtproto.quadruped.Nav;
 const dtService = protoDescriptor.dtproto.dtService;
-const RobotCommandTimeStamped = protoDescriptor.dtproto.RobotCommandTimeStamped;
-const ControlCmd = protoDescriptor.dtproto.ControlCmd;
+// const RobotCommandTimeStamped = protoDescriptor.dtproto.RobotCommandTimeStamped;
+// const ControlCmd = protoDescriptor.dtproto.ControlCmd;
 
 // Load DualArm.proto specifically with protobuf.js for reliable decoding
 const root = new protobuf.Root();
+
+// Override resolvePath
+root.resolvePath = function (origin, target) {
+    console.log(`resolvePath 호출됨 - Origin: ${origin}, Target: ${target}`);
+
+    // 여기에 사용자 정의 로직을 구현합니다.
+    // 예를 들어, 모든 임포트를 'proto' 디렉토리에서 찾도록 합니다.
+    const protoDir = path.resolve(__dirname, '../proto'); // 'proto' 디렉토리의 절대 경로
+
+    // target이 절대 경로가 아닌 경우, protoDir에서 찾도록 합니다.
+    // 여기서는 간단하게 protoDir 안에 target이 바로 있다고 가정합니다.
+    const resolvedPath = path.join(protoDir, target);
+
+    console.log(`Resolved path: ${resolvedPath}`);
+    return resolvedPath;
+
+    // 만약 특정 파일을 무시하고 싶다면 null을 반환합니다.
+    // if (target === 'google/protobuf/timestamp.proto') {
+    //     return null;
+    // }
+};
+
 root.loadSync(
     [
-        DUALARM_PROTO_PATH
+        // DUALARM_PROTO_PATH
+        'DualArm.proto',
+        'dtProto/robot_msgs/RobotState.proto',
+        // 'dtProto/robot_msgs/RobotCommand.proto',
+        // 'dtProto/robot_msgs/ControlCmd.proto'
     ], 
     { 
         keepCase: true,
@@ -98,12 +123,12 @@ root.loadSync(
         defaults: true,
         oneofs: true,
         includeDirs: [
-            path.join(__dirname, '../proto'),
-            path.join(__dirname, '../proto/dtProto')
+            path.join(__dirname, '../proto')
         ]
     }
 );
 const OperationStateTimeStamped = root.lookupType("dtproto.dualarm.OperationStateTimeStamped");
+const RobotStateTimeStamped = root.lookupType("dtproto.robot_msgs.RobotStateTimeStamped");
 // const RobotCommandTimeStamped = root.lookupType("dtproto.robot_msgs.RobotCommandTimeStamped");
 // const ControlCmd = root.lookupType("dtproto.robot_msgs.ControlCmd");
 
@@ -127,15 +152,38 @@ const startStateStreaming = () => {
         stateStream = stateClient.PublishState({});
         
         stateStream.on('data', (response) => {
-            // Extract position and orientation from state
-            // console.log('Received state update:', response.state);
-            const state = {
-                x: 1.0, // response.state.base_pose.position.x,
-                y: 1.0, //response.state.base_pose.position.y,
-                theta: 0.0 //response.state.base_pose.orientation.z // Assuming z is the yaw angle
-            };
-            // Broadcast to all connected WebSocket clients
-            broadcastState(state);
+            const anyMessage = response.state;
+
+            if (anyMessage && anyMessage.type_url && anyMessage.value) {
+                const expectedTypeUrl = 'type.googleapis.com/dtproto.robot_msgs.RobotStateTimeStamped';
+
+                if (anyMessage.type_url === expectedTypeUrl) {
+                    try {
+                        // Extract position and orientation from state
+                        const decodedState = RobotStateTimeStamped.decode(anyMessage.value);
+
+                        if (decodedState.state) {
+                            const robotstate = {
+                                x: decodedState.state.base_pose.position.x,
+                                y: decodedState.state.base_pose.position.y,
+                                theta: decodedState.state.base_pose.orientation.z // Assuming z is the yaw angle
+                            };
+
+                            console.log('Received and decoded robot state(pose):', robotstate);
+
+                            // Broadcast to all connected WebSocket clients
+                            broadcastState(robotstate);
+                            // wss.clients.forEach((client) => {
+                            //     if (client.readyState === WebSocket.OPEN) {
+                            //         client.send(JSON.stringify({ type: 'state-update', data: robotstate }));
+                            //     }
+                            // });
+                        }
+                    } catch (e) {
+                        console.error('Failed to decode Any message:', e);
+                    }
+                }
+            }
         });
 
         stateStream.on('error', (error) => {
