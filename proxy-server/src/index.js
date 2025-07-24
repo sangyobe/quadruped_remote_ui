@@ -8,11 +8,23 @@ const util = require('util');
 const protobuf = require('protobufjs');
 require('dotenv').config();
 
+console.log('Environment Variables:');
+console.log(`PORT: ${process.env.PORT}`);
+console.log(`WSS_PORT: ${process.env.WSS_PORT}`);
+console.log(`STATE_SERVER_HOST: ${process.env.STATE_SERVER_HOST}`);
+console.log(`GRPC_STATE_SERVER_PORT: ${process.env.GRPC_STATE_SERVER_PORT}`);
+console.log(`GRPC_OPSTATE_SERVER_PORT: ${process.env.GRPC_OPSTATE_SERVER_PORT}`);
+console.log(`GRPC_COMMAND_SERVER_PORT: ${process.env.GRPC_COMMAND_SERVER_PORT}`);
+console.log(`GRPC_SERVER_HOST: ${process.env.GRPC_SERVER_HOST}`);
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Create WebSocket server
-const wss = new WebSocket.Server({ port: 3005 });
+const WSS_PORT = process.env.WSS_PORT || 3005;
+
+// Create WebSocket server
+const wss = new WebSocket.Server({ port: WSS_PORT });
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
@@ -108,7 +120,7 @@ const startStateStreaming = () => {
 
     try {
         const stateClient = new dtService(
-            `${process.env.STATE_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_STATE_SERVER_PORT || 50053}`,
+            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_ROBOT_STATE_SERVER_PORT || 50053}`,
             grpc.credentials.createInsecure()
         );
 
@@ -163,11 +175,11 @@ const startOpStateStreaming = () => {
     }
 
     try {
-        const opstateClient = new dtService(
-            `${process.env.STATE_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_OPSTATE_SERVER_PORT || 50060}`,
+        const opStateClient = new dtService(
+            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_OPSTATE_SERVER_PORT || 50060}`,
             grpc.credentials.createInsecure()
         );
-        opstateStream = opstateClient.PublishState({});
+        opstateStream = opStateClient.PublishState({});
         
         opstateStream.on('data', (response) => {
             const anyMessage = response.state;
@@ -266,7 +278,7 @@ const startCommandStreaming = () => {
     try {
         // Create gRPC clients
         const commandClient = new quadrupedService(
-            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_COMMAND_SERVER_PORT || 50056}`,
+            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_NAV_COMMAND_SERVER_PORT || 50056}`,
             grpc.credentials.createInsecure()
         );
 
@@ -404,7 +416,7 @@ app.post('/api/sendRobotCommand', async (req, res) => {
 
     try {
         const robotCommandClient = new dtService(
-            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_COMMAND_SERVER_PORT || 50052}`,
+            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_TASK_COMMAND_SERVER_PORT || 50052}`,
             grpc.credentials.createInsecure()
         );
 
