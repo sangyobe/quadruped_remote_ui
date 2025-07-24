@@ -9,6 +9,10 @@ import {
   Typography,
   Paper,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   ArrowUpward,
@@ -22,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { TextField } from '@mui/material';
 import axios from 'axios';
+import YAML from 'yaml';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
@@ -39,6 +44,37 @@ function App() {
   const [argN, setArgN] = useState([0, 0, 0]);
   const [argF, setArgF] = useState([0, 0, 0]);
   const [commandResult, setCommandResult] = useState('');
+
+  // Map related states
+  const [mapList, setMapList] = useState([]);
+  const [selectedMap, setSelectedMap] = useState('');
+  const [mapImageUrl, setMapImageUrl] = useState('');
+
+  useEffect(() => {
+    // Fetch map list
+    axios.get('/maps/map_list.json')
+      .then(response => {
+        setMapList(response.data);
+        if (response.data.length > 0) {
+          setSelectedMap(response.data[0]);
+        }
+      })
+      .catch(error => console.error('Error fetching map list:', error));
+  }, []);
+
+  useEffect(() => {
+    // Fetch map image from selected map YAML
+    if (selectedMap) {
+      axios.get(`/maps/${selectedMap}`)
+        .then(response => {
+          const doc = YAML.parse(response.data);
+          if (doc.image) {
+            setMapImageUrl(`/maps/${doc.image}`);
+          }
+        })
+        .catch(error => console.error('Error fetching map YAML:', error));
+    }
+  }, [selectedMap]);
 
   const handleArgNChange = (index, value) => {
     const newArgN = [...argN];
@@ -193,6 +229,34 @@ function App() {
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Robot Remote Control
         </Typography>
+
+        {/* Map Display Section */}
+        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Map Display
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="map-select-label">Select Map</InputLabel>
+            <Select
+              labelId="map-select-label"
+              id="map-select"
+              value={selectedMap}
+              label="Select Map"
+              onChange={(e) => setSelectedMap(e.target.value)}
+            >
+              {mapList.map((mapName) => (
+                <MenuItem key={mapName} value={mapName}>
+                  {mapName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {mapImageUrl && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <img src={mapImageUrl} alt="Selected Map" style={{ maxWidth: '100%', height: 'auto' }} />
+            </Box>
+          )}
+        </Paper>
 
         <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>
@@ -532,104 +596,105 @@ function App() {
             Pre-defined Robot Commands
           </Typography>
           <Grid container spacing={2} justifyContent="center">
-            {[{
-              label: "Ready",
-              cmd_mode: 1,
-              arg: "",
-              arg_n: [1, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Opening",
-              cmd_mode: 1,
-              arg: "",
-              arg_n: [2, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Switch Hands",
-              cmd_mode: 1,
-              arg: "",
-              arg_n: [3, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Throw R",
-              cmd_mode: 1,
-              arg: "",
-              arg_n: [4, 1, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Throw L",
-              cmd_mode: 1,
-              arg: "",
-              arg_n: [4, 2, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Move to door",
-              cmd_mode: 2,
-              arg: "door",
-              arg_n: [1, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Move to site",
-              cmd_mode: 2,
-              arg: "site",
-              arg_n: [1, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Move to table",
-              cmd_mode: 2,
-              arg: "table",
-              arg_n: [1, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Move to (x,y,th)",
-              cmd_mode: 2,
-              arg: "",
-              arg_n: [2, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Grasp",
-              cmd_mode: 3,
-              arg: "",
-              arg_n: [4, 7, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Open door",
-              cmd_mode: 4,
-              arg: "",
-              arg_n: [0, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Pause",
-              cmd_mode: 5,
-              arg: "",
-              arg_n: [1, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Resume",
-              cmd_mode: 5,
-              arg: "",
-              arg_n: [2, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
-            {
-              label: "Cancel",
-              cmd_mode: 5,
-              arg: "",
-              arg_n: [3, 0, 0],
-              arg_f: [0.0, 0.0, 0.0],
-            },
+            {[
+              {
+                label: "Ready",
+                cmd_mode: 1,
+                arg: "",
+                arg_n: [1, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Opening",
+                cmd_mode: 1,
+                arg: "",
+                arg_n: [2, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Switch Hands",
+                cmd_mode: 1,
+                arg: "",
+                arg_n: [3, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Throw R",
+                cmd_mode: 1,
+                arg: "",
+                arg_n: [4, 1, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Throw L",
+                cmd_mode: 1,
+                arg: "",
+                arg_n: [4, 2, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Move to door",
+                cmd_mode: 2,
+                arg: "door",
+                arg_n: [1, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Move to site",
+                cmd_mode: 2,
+                arg: "site",
+                arg_n: [1, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Move to table",
+                cmd_mode: 2,
+                arg: "table",
+                arg_n: [1, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Move to (x,y,th)",
+                cmd_mode: 2,
+                arg: "",
+                arg_n: [2, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Grasp",
+                cmd_mode: 3,
+                arg: "",
+                arg_n: [4, 7, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Open door",
+                cmd_mode: 4,
+                arg: "",
+                arg_n: [0, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Pause",
+                cmd_mode: 5,
+                arg: "",
+                arg_n: [1, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Resume",
+                cmd_mode: 5,
+                arg: "",
+                arg_n: [2, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
+              {
+                label: "Cancel",
+                cmd_mode: 5,
+                arg: "",
+                arg_n: [3, 0, 0],
+                arg_f: [0.0, 0.0, 0.0],
+              },
             ].map((command) => (
               <Grid item key={command.label}>
                 <Button
@@ -648,4 +713,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;  

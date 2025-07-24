@@ -167,6 +167,7 @@ startStateStreaming();
 ////////////////////////////////////////////////////////////////////////////////
 // opstate streaming setup
 let opstateStream = null;
+let lastOpStateUpdateTime = 0; // Add this line to track last update time
 
 const startOpStateStreaming = () => {
     if (opstateStream) {
@@ -197,14 +198,18 @@ const startOpStateStreaming = () => {
                                 op_status: decodedState.state.op_status
                             };
 
-                            console.log('Received and decoded operation state:', opstate);
-
-                            // Broadcast to all connected WebSocket clients
+                            // Broadcast to all connected WebSocket clients immediately
                             wss.clients.forEach((client) => {
                                 if (client.readyState === WebSocket.OPEN) {
                                     client.send(JSON.stringify({ type: 'opstate-update', data: opstate }));
                                 }
                             });
+
+                            const currentTime = Date.now();
+                            if (currentTime - lastOpStateUpdateTime >= 1000) { // Check if 1 second has passed for logging
+                                console.log('Received and decoded operation state:', opstate);
+                                lastOpStateUpdateTime = currentTime; // Update last update time for logging
+                            }
                         }
                     } catch (e) {
                         console.error('Failed to decode Any message:', e);
