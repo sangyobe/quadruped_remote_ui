@@ -36,6 +36,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [robotState, setRobotState] = useState({ x: 0, y: 0, theta: 0 });
+  const [robotPositionHistory, setRobotPositionHistory] = useState([]); // New state for robot position history
   const [opState, setOpState] = useState({ op_mode: 0, op_status: 0 });
   const [ws, setWs] = useState(null);
   const [currentDirection, setCurrentDirection] = useState(null);
@@ -49,6 +50,9 @@ function App() {
   const [mapList, setMapList] = useState([]);
   const [selectedMap, setSelectedMap] = useState('');
   const [mapImageUrl, setMapImageUrl] = useState('');
+  const [mapResolution, setMapResolution] = useState(0);
+  const [mapOrigin, setMapOrigin] = useState([0, 0, 0]);
+  const [mapImageDimensions, setMapImageDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     // Fetch map list
@@ -63,7 +67,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Fetch map image from selected map YAML
+    // Fetch map image and metadata from selected map YAML
     if (selectedMap) {
       axios.get(`/maps/${selectedMap}`)
         .then(response => {
@@ -71,10 +75,56 @@ function App() {
           if (doc.image) {
             setMapImageUrl(`/maps/${doc.image}`);
           }
+          if (doc.resolution) {
+            setMapResolution(doc.resolution);
+          }
+          if (doc.origin) {
+            setMapOrigin(doc.origin);
+          }
         })
         .catch(error => console.error('Error fetching map YAML:', error));
     }
   }, [selectedMap]);
+
+  const handleImageLoad = (e) => {
+    setMapImageDimensions({ width: e.target.naturalWidth, height: e.target.naturalHeight });
+  };
+
+  const robotToPixel = (robotX, robotY, robotTheta) => {
+    if (!mapResolution || !mapImageDimensions.width || !mapImageDimensions.height) {
+      return { x: -100, y: -100, rotation: 0 }; // Return off-screen if map data is not ready
+    }
+
+    // Convert robot coordinates to map-relative coordinates (meters)
+    // mapOrigin is the real-world coordinate of the bottom-left pixel of the map.
+    const robotXRelative = robotX - mapOrigin[0];
+    const robotYRelative = robotY - mapOrigin[1];
+
+    // Convert map-relative coordinates to pixel coordinates (from top-left of image)
+    // pixelX is distance from left edge of image.
+    // pixelY is distance from top edge of image (Y-axis inverted for image display).
+    const pixelX = robotXRelative / mapResolution;
+    const pixelY = mapImageDimensions.height - (robotYRelative / mapResolution);
+
+    // Convert theta to degrees for CSS rotation
+    const rotation = robotTheta * (180 / Math.PI);
+
+    return { x: pixelX, y: pixelY, rotation: rotation };
+  };
+
+  const { x: robotPixelX, y: robotPixelY, rotation: robotRotation } = robotToPixel(robotState.x, robotState.y, robotState.theta);
+
+  useEffect(() => {
+    // console.log(`Robot Pixel Coordinates: X=${robotPixelX.toFixed(2)}, Y=${robotPixelY.toFixed(2)}, Rotation=${robotRotation.toFixed(2)}deg`);
+
+    // Update robot position history
+    setRobotPositionHistory(prevHistory => {
+      const now = Date.now();
+      const newHistory = [...prevHistory, { x: robotState.x, y: robotState.y, timestamp: now }];
+      // Keep only data from the last 10 seconds
+      return newHistory.filter(pos => now - pos.timestamp < 10000);
+    });
+  }, [robotPixelX, robotPixelY, robotRotation, robotState.x, robotState.y]);
 
   const handleArgNChange = (index, value) => {
     const newArgN = [...argN];
@@ -252,10 +302,66 @@ function App() {
             </Select>
           </FormControl>
           {mapImageUrl && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <img src={mapImageUrl} alt="Selected Map" style={{ maxWidth: '100%', height: 'auto' }} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2, position: 'relative', overflow: 'auto' }}>
+              <img 
+                src={mapImageUrl} 
+                alt="Selected Map" 
+                onLoad={handleImageLoad}
+              />
+              {mapImageDimensions.width > 0 && mapImageDimensions.height > 0 && (
+                <>
+                  <svg 
+                    width={mapImageDimensions.width} 
+                    height={mapImageDimensions.height} 
+                    style={{ position: 'absolute', top: 0, left: 0 }}
+                  >
+                    <polyline
+                      points={robotPositionHistory.map(pos => {
+                        const { x, y } = robotToPixel(pos.x, pos.y, 0); // Theta is not needed for path
+                        return `${x},${y}`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="blue"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  <img
+                    src="/images/robot_icon.png" // Path to your robot icon
+                    alt="Robot Icon"
+                    style={{
+                      position: 'absolute',
+                      left: robotPixelX,
+                      top: robotPixelY,
+                      transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
+                      width: '40px', // Adjust size as needed
+                    height: '40px',
+                  }}
+                  />
+                </>
+              )}
             </Box>
           )}
+        </Paper>
+
+        {/* Robot State Display */}
+        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Robot State
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <Typography variant="subtitle1">X Position</Typography>
+              <Typography variant="h6">{robotState.x.toFixed(3)}</Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="subtitle1">Y Position</Typography>
+              <Typography variant="h6">{robotState.y.toFixed(3)}</Typography>
+            </Grid>
+            <Grid item xs={4}>
+              <Typography variant="subtitle1">Orientation (θ)</Typography>
+              <Typography variant="h6">{(robotState.theta * 180 / Math.PI).toFixed(1)}°</Typography>
+            </Grid>
+          </Grid>
         </Paper>
 
         <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -461,26 +567,7 @@ function App() {
           </Box>
         </Paper>
 
-        {/* Robot State Display */}
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Robot State
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <Typography variant="subtitle1">X Position</Typography>
-              <Typography variant="h6">{robotState.x.toFixed(3)}</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography variant="subtitle1">Y Position</Typography>
-              <Typography variant="h6">{robotState.y.toFixed(3)}</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography variant="subtitle1">Orientation (θ)</Typography>
-              <Typography variant="h6">{(robotState.theta * 180 / Math.PI).toFixed(1)}°</Typography>
-            </Grid>
-          </Grid>
-        </Paper>
+        
 
         {/* Operation State Display */}
         <Paper elevation={3} sx={{ p: 3, mt: 3 }}>

@@ -89,7 +89,7 @@ const root = new protobuf.Root();
 
 // Override resolvePath
 root.resolvePath = function (origin, target) {
-    console.log(`resolvePath 호출됨 - Origin: ${origin}, Target: ${target}`);
+    // console.log(`resolvePath 호출됨 - Origin: ${origin}, Target: ${target}`);
 
     // 여기에 사용자 정의 로직을 구현합니다.
     // 예를 들어, 모든 임포트를 'proto' 디렉토리에서 찾도록 합니다.
@@ -99,7 +99,7 @@ root.resolvePath = function (origin, target) {
     // 여기서는 간단하게 protoDir 안에 target이 바로 있다고 가정합니다.
     const resolvedPath = path.join(protoDir, target);
 
-    console.log(`Resolved path: ${resolvedPath}`);
+    // console.log(`Resolved path: ${resolvedPath}`);
     return resolvedPath;
 
     // 만약 특정 파일을 무시하고 싶다면 null을 반환합니다.
@@ -136,7 +136,8 @@ const RobotStateTimeStamped = root.lookupType("dtproto.robot_msgs.RobotStateTime
 ////////////////////////////////////////////////////////////////////////////////
 // Robot State streaming setup
 let robotStateStream = null;
-let lastRobotStateUpdateTime = 0; // Add this line to track last update time
+let lastRobotStateUpdateTime = 0; // Add this line to track last update(broadcast) time
+let lastRobotStateLoggingTime = 0; // Add this line to track last console.log time
 
 const startRobotStateStreaming = () => {
     if (robotStateStream) {
@@ -170,18 +171,21 @@ const startRobotStateStreaming = () => {
                                 theta: decodedState.state.base_pose.orientation.z // Assuming z is the yaw angle
                             };
 
-                            // Broadcast to all connected WebSocket clients
-                            // broadcastState(robotstate);
-                            wss.clients.forEach((client) => {
-                                if (client.readyState === WebSocket.OPEN) {
-                                    client.send(JSON.stringify({ type: 'robotstate-update', data: robotstate }));
-                                }
-                            });
-
                             const currentTime = Date.now();
-                            if (currentTime - lastRobotStateUpdateTime >= 1000) { // Check if 1 second has passed for logging
+
+                            if (currentTime - lastRobotStateUpdateTime >= 100) { // Check time for broadcasting message
+                                // Broadcast to all connected WebSocket clients
+                                wss.clients.forEach((client) => {
+                                    if (client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({ type: 'robotstate-update', data: robotstate }));
+                                    }
+                                });
+                                lastRobotStateUpdateTime = currentTime;
+                            }
+                            
+                            if (currentTime - lastRobotStateLoggingTime >= 1000) { // Check if 1 second has passed for logging
                                 console.log('Received and decoded robot state(pose):', robotstate);
-                                lastRobotStateUpdateTime = currentTime; // Update last update time for logging
+                                lastRobotStateLoggingTime = currentTime; // Update last update time for logging
                             }
                         }
                     } catch (e) {
@@ -221,6 +225,7 @@ startRobotStateStreaming();
 // Operation State streaming setup
 let opstateStream = null;
 let lastOpStateUpdateTime = 0; // Add this line to track last update time
+let lastOpStateLoggingTime = 0; // Add this line to track last logging time
 
 const startOpStateStreaming = () => {
     if (opstateStream) {
@@ -251,17 +256,21 @@ const startOpStateStreaming = () => {
                                 op_status: decodedState.state.op_status
                             };
 
-                            // Broadcast to all connected WebSocket clients immediately
-                            wss.clients.forEach((client) => {
-                                if (client.readyState === WebSocket.OPEN) {
-                                    client.send(JSON.stringify({ type: 'opstate-update', data: opstate }));
-                                }
-                            });
-
                             const currentTime = Date.now();
-                            if (currentTime - lastOpStateUpdateTime >= 1000) { // Check if 1 second has passed for logging
+                            
+                            if (currentTime - lastOpStateUpdateTime >= 100) {
+                                // Broadcast to all connected WebSocket clients
+                                wss.clients.forEach((client) => {
+                                    if (client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({ type: 'opstate-update', data: opstate }));
+                                    }
+                                });
+                                lastOpStateUpdateTime = currentTime; // Update last update time
+                            }
+
+                            if (currentTime - lastOpStateLoggingTime >= 1000) { // Check if 1 second has passed for logging
                                 console.log('Received and decoded operation state:', opstate);
-                                lastOpStateUpdateTime = currentTime; // Update last update time for logging
+                                lastOpStateLoggingTime = currentTime; // Update last update time for logging
                             }
                         }
                     } catch (e) {
