@@ -165,10 +165,12 @@ const startRobotStateStreaming = () => {
                         const decodedState = RobotStateTimeStamped.decode(anyMessage.value);
 
                         if (decodedState.state) {
+                            const { position, orientation } = decodedState.state.base_pose;
+                            const yaw = Math.atan2(2 * (orientation.w * orientation.z + orientation.x * orientation.y), 1 - 2 * (orientation.y * orientation.y + orientation.z * orientation.z));
                             const robotstate = {
-                                x: decodedState.state.base_pose.position.x,
-                                y: decodedState.state.base_pose.position.y,
-                                theta: decodedState.state.base_pose.orientation.z // Assuming z is the yaw angle
+                                x: position.x,
+                                y: position.y,
+                                theta: yaw
                             };
 
                             const currentTime = Date.now();
