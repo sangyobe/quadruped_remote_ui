@@ -13,6 +13,7 @@ console.log(`PORT: ${process.env.PORT}`);
 console.log(`WSS_PORT: ${process.env.WSS_PORT}`);
 console.log(`GRPC_SERVER_HOST: ${process.env.GRPC_SERVER_HOST}`);
 console.log(`GRPC_ROBOT_STATE_SERVER_PORT: ${process.env.GRPC_ROBOT_STATE_SERVER_PORT}`);
+console.log(`GRPC_NAV_STATE_SERVER_PORT: ${process.env.GRPC_NAV_STATE_SERVER_PORT}`);
 console.log(`GRPC_OPSTATE_SERVER_PORT: ${process.env.GRPC_OPSTATE_SERVER_PORT}`);
 console.log(`GRPC_NAV_COMMAND_SERVER_PORT: ${process.env.GRPC_NAV_COMMAND_SERVER_PORT}`);
 console.log(`GRPC_TASK_COMMAND_SERVER_PORT: ${process.env.GRPC_TASK_COMMAND_SERVER_PORT}`);
@@ -113,6 +114,7 @@ root.loadSync(
         // DUALARM_PROTO_PATH
         'DualArm.proto',
         'dtProto/robot_msgs/RobotState.proto',
+        'dtProto/nav_msgs/NavState.proto',
         // 'dtProto/robot_msgs/RobotCommand.proto',
         // 'dtProto/robot_msgs/ControlCmd.proto'
     ], 
@@ -129,6 +131,7 @@ root.loadSync(
 );
 const OperationStateTimeStamped = root.lookupType("dtproto.dualarm.OperationStateTimeStamped");
 const RobotStateTimeStamped = root.lookupType("dtproto.robot_msgs.RobotStateTimeStamped");
+const NavStateTimeStamped = root.lookupType("dtproto.nav_msgs.NavStateTimeStamped");
 // const RobotCommandTimeStamped = root.lookupType("dtproto.robot_msgs.RobotCommandTimeStamped");
 // const ControlCmd = root.lookupType("dtproto.robot_msgs.ControlCmd");
 
@@ -224,6 +227,124 @@ const startRobotStateStreaming = () => {
 startRobotStateStreaming();
 
 ////////////////////////////////////////////////////////////////////////////////
+// Navigation State streaming setup
+let navStateStream = null;
+let lastNavStateUpdateTime = 0; // Add this line to track last update(broadcast) time
+let lastNavStateLoggingTime = 0; // Add this line to track last console.log time
+let lastNavTrajUpdateTime = 0; // Add this line to track last update(broadcast) time
+let lastNavTrajLoggingTime = 0; // Add this line to track last console.log time
+
+const startNavStateStreaming = () => {
+    if (navStateStream) {
+        console.log('Navigation state stream already exists');
+        return;
+    }
+
+    try {
+        const navStateClient = new dtService(
+            `${process.env.GRPC_SERVER_HOST || '192.168.10.9'}:${process.env.GRPC_NAV_STATE_SERVER_PORT || 50062}`,
+            grpc.credentials.createInsecure()
+        );
+
+        navStateStream = navStateClient.PublishState({});
+        
+        navStateStream.on('data', (response) => {
+            const anyMessage = response.state;
+
+            if (anyMessage && anyMessage.type_url && anyMessage.value) {
+                const expectedTypeUrl = 'type.googleapis.com/dtproto.nav_msgs.NavStateTimeStamped';
+
+                if (anyMessage.type_url === expectedTypeUrl) {
+                    try {
+                        const currentTime = Date.now();
+
+                        // Extract position and orientation from state
+                        const decodedState = NavStateTimeStamped.decode(anyMessage.value);
+
+                        if (decodedState.state.se2_pose && decodedState.state.se2_traj) {
+                            const { position, heading } = decodedState.state.se2_pose;
+                            const navstate = {
+                                x: position.x,
+                                y: position.y,
+                                theta: heading
+                            };
+
+                            const navtraj = decodedState.state.se2_traj.points.map(p => {
+                                const cos_h = Math.cos(heading);
+                                const sin_h = Math.sin(heading);
+                                const x_rotated = p.pose.position.x * cos_h - p.pose.position.y * sin_h;
+                                const y_rotated = p.pose.position.x * sin_h + p.pose.position.y * cos_h;
+                                return {
+                                    x: x_rotated + position.x,
+                                    y: y_rotated + position.y,
+                                    theta: p.pose.heading + heading
+                                };
+                            });
+
+                            if (currentTime - lastNavStateUpdateTime >= 100) { // Check time for broadcasting message
+                                // Broadcast to all connected WebSocket clients
+                                wss.clients.forEach((client) => {
+                                    if (client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({ type: 'navstate-update', data: navstate }));
+                                    }
+                                });
+                                lastNavStateUpdateTime = currentTime;
+                            }
+                            
+                            if (currentTime - lastNavStateLoggingTime >= 1000) { // Check if 1 second has passed for logging
+                                console.log('Received and decoded navigation state:', navstate);
+                                lastNavStateLoggingTime = currentTime; // Update last update time for logging
+                            }
+
+                            if (currentTime - lastNavTrajUpdateTime >= 100) { // Check time for broadcasting message
+                                // Broadcast to all connected WebSocket clients
+                                wss.clients.forEach((client) => {
+                                    if (client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({ type: 'navtraj-update', data: navtraj }));
+                                    }
+                                });
+                                lastNavTrajUpdateTime = currentTime;
+                            }
+                            
+                            if (currentTime - lastNavTrajLoggingTime >= 1000) { // Check if 1 second has passed for logging
+                                console.log('Received and decoded navigation trajectory:', navtraj);
+                                lastNavTrajLoggingTime = currentTime; // Update last update time for logging
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to decode Any message:', e);
+                    }
+                }
+            }
+        });
+
+        navStateStream.on('error', (error) => {
+            console.error('Navigation state stream error:', error);
+            navStateStream = null;
+            // Attempt to reconnect after a delay
+            setTimeout(startNavStateStreaming, 5000);
+        });
+
+        navStateStream.on('end', () => {
+            console.log('Navigation state stream ended');
+            navStateStream = null;
+            // Attempt to reconnect after a delay
+            setTimeout(startNavStateStreaming, 5000);
+        });
+
+        console.log('Navigation state streaming started');
+    } catch (error) {
+        console.error('Error creating navigation state stream:', error);
+        navStateStream = null;
+        // Attempt to reconnect after a delay
+        setTimeout(startNavStateStreaming, 5000);
+    }
+};
+
+// Start state streaming when server starts
+startNavStateStreaming();
+
+////////////////////////////////////////////////////////////////////////////////
 // Operation State streaming setup
 let opstateStream = null;
 let lastOpStateUpdateTime = 0; // Add this line to track last update time
@@ -302,7 +423,7 @@ const startOpStateStreaming = () => {
     }
 };
 
-startOpStateStreaming();
+// startOpStateStreaming();
 
 ////////////////////////////////////////////////////////////////////////////////
 // robot command streaming setup

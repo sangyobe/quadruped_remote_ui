@@ -54,6 +54,8 @@ function Home() {
     const [activeStreams, setActiveStreams] = useState(new Map());
     const [isRunning, setIsRunning] = useState(false);
     const [robotState, setRobotState] = useState({ x: 0, y: 0, theta: 0 });
+    const [navState, setNavState] = useState({ x: 0, y: 0, theta: 0 });
+    const [navTraj, setNavTraj] = useState([]);
     const [robotPositionHistory, setRobotPositionHistory] = useState([]); // New state for robot position history
     const [currentDirection, setCurrentDirection] = useState(null);
 
@@ -155,6 +157,12 @@ function Home() {
             const message = JSON.parse(event.data);
             if (message.type === 'robotstate-update') {
                 setRobotState(message.data);
+            }
+            else if (message.type === 'navstate-update') {
+                setNavState(message.data);
+            }
+            else if (message.type === 'navtraj-update') {
+                setNavTraj(message.data);
             }
         };
 
@@ -295,6 +303,15 @@ function Home() {
                                                     stroke="blue"
                                                     strokeWidth={2 / mapZoom}
                                                 />
+                                                <polyline
+                                                    points={navTraj.map(pos => {
+                                                        const { x, y } = robotToPixel(pos.x, pos.y, 0);
+                                                        return `${x},${y}`;
+                                                    }).join(' ')}
+                                                    fill="none"
+                                                    stroke="red"
+                                                    strokeWidth={2 / mapZoom}
+                                                />
                                             </svg>
                                             <img
                                                 src="/images/robot_icon.png" // Path to your robot icon
@@ -304,8 +321,8 @@ function Home() {
                                                     left: robotPixelX,
                                                     top: robotPixelY,
                                                     transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
-                                                    width: `${40 / mapZoom}px`,
-                                                    height: `${40 / mapZoom}px`,
+                                                    width: `${50 / mapZoom}px`,
+                                                    height: `${50 / mapZoom}px`,
                                                     pointerEvents: 'none'
                                                 }}
                                             />
