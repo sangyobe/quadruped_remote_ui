@@ -82,6 +82,41 @@ function PonyKA() {
         };
     }, []);
 
+    const getOperationStatusText = (status) => {
+        switch (status) {
+            case 0:
+                return '0(Success)';
+            case 1:
+                return '1(Running)';
+            case 2:
+                return '2(Paused)';
+            case -1:
+                return '-1(Failed)';
+            default:
+                return status;
+        }
+    };
+
+    const getOperationModeText = (mode) => {
+        const modeMap = {
+            0x0001: "대기",
+            0x0202: "시연장소로 이동",
+            0x0103: "오프닝 모션",
+            0x0205: "문 앞으로 이동",
+            0x0006: "문 앞에서 대기",
+            0x0407: "문 열기",
+            0x0208: "문 통과",
+            0x0009: "물체 인식",
+            0x030A: "물체 파지",
+            0x020B: "던지기 위치로 이동",
+            0x000C: "던지기 명령 대기",
+            0x010D: "손 바꾸기",
+            0x010E: "던지기",
+        };
+        const modeText = modeMap[mode] || "Unknown";
+        return `0x${mode.toString(16).padStart(4, '0')}(${modeText})`;
+    };
+
     return (
         <Container maxWidth="md">
             <Box sx={{ my: 4 }}>
@@ -98,7 +133,7 @@ function PonyKA() {
                         <Grid item xs={6}>
                             <TextField
                                 label="Operation Mode"
-                                value={opState.op_mode}
+                                value={getOperationModeText(opState.op_mode)}
                                 InputProps={{
                                     readOnly: true,
                                 }}
@@ -109,7 +144,7 @@ function PonyKA() {
                         <Grid item xs={6}>
                             <TextField
                                 label="Operation Status"
-                                value={opState.op_status}
+                                value={getOperationStatusText(opState.op_status)}
                                 InputProps={{
                                     readOnly: true,
                                 }}
@@ -133,7 +168,7 @@ function PonyKA() {
                                 value={cmdMode}
                                 onChange={(e) => setCmdMode(e.target.value)}
                                 fullWidth
-                                margin="normal"
+                                margin="dense"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -143,7 +178,7 @@ function PonyKA() {
                                 value={arg}
                                 onChange={(e) => setArg(e.target.value)}
                                 fullWidth
-                                margin="normal"
+                                margin="dense"
                             />
                         </Grid>
                         {[0, 1, 2].map((index) => (
@@ -154,7 +189,7 @@ function PonyKA() {
                                     value={argN[index]}
                                     onChange={(e) => handleArgNChange(index, e.target.value)}
                                     fullWidth
-                                    margin="normal"
+                                    margin="dense"
                                 />
                             </Grid>
                         ))}
@@ -166,7 +201,7 @@ function PonyKA() {
                                     value={argF[index]}
                                     onChange={(e) => handleArgFChange(index, e.target.value)}
                                     fullWidth
-                                    margin="normal"
+                                    margin="dense"
                                 />
                             </Grid>
                         ))}
@@ -189,9 +224,9 @@ function PonyKA() {
                                 }}
                                 variant="filled"
                                 fullWidth
-                                margin="normal"
+                                margin="dense"
                                 multiline
-                                rows={4}
+                                rows={8}
                             />
                         </Grid>
                     </Grid>

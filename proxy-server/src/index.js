@@ -186,7 +186,7 @@ const startRobotStateStreaming = () => {
                             }
                             
                             if (currentTime - lastRobotStateLoggingTime >= 1000) { // Check if 1 second has passed for logging
-                                console.log('Received and decoded robot state(pose):', robotstate);
+                                // console.log('Received and decoded robot state(pose):', robotstate);
                                 lastRobotStateLoggingTime = currentTime; // Update last update time for logging
                             }
                         }
@@ -271,7 +271,7 @@ const startOpStateStreaming = () => {
                             }
 
                             if (currentTime - lastOpStateLoggingTime >= 1000) { // Check if 1 second has passed for logging
-                                console.log('Received and decoded operation state:', opstate);
+                                console.log('Received and decoded operation state:', { ...opstate, op_mode: `0x${opstate.op_mode.toString(16)}` });
                                 lastOpStateLoggingTime = currentTime; // Update last update time for logging
                             }
                         }
