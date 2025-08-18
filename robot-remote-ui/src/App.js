@@ -321,8 +321,10 @@ function Home() {
                                                     left: robotPixelX,
                                                     top: robotPixelY,
                                                     transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
-                                                    width: `${50 / mapZoom}px`,
-                                                    height: `${50 / mapZoom}px`,
+                                                    // width: `${50 / mapZoom}px`,
+                                                    // height: `${50 / mapZoom}px`,
+                                                    width: `${0.8 / mapResolution}px`,
+                                                    height: `${0.8 / mapResolution}px`,
                                                     pointerEvents: 'none'
                                                 }}
                                             />
